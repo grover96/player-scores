@@ -1,5 +1,6 @@
-package com.example.demo.controller;
+package com.example.demo.unit.controller;
 
+import com.example.demo.controller.PlayerController;
 import com.example.demo.domain.Player;
 import com.example.demo.services.PlayerService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,12 +22,11 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(value = PlayerController.class)
-public class PlayerAPITest {
+public class PlayerControllerUnitTest {
 
     @Autowired
     private MockMvc mvc;
@@ -75,9 +75,15 @@ public class PlayerAPITest {
         Player player4 = new Player(4, "Ben Simmons", "Philadelphia Sixers", 80, 20.6f);
         String jsonPlayerObj = objectMapper.writeValueAsString(player4);
 
-        Mockito.when(playerService.addPlayer(Mockito.any(Player.class))).thenReturn(player4);
+        Mockito.when(playerService.save(Mockito.any(Player.class))).thenReturn(player4);
         MvcResult result = mvc.perform(post("/api/players").accept(MediaType.APPLICATION_JSON).content(jsonPlayerObj).contentType(MediaType.APPLICATION_JSON)).andReturn();
         assertEquals(HttpStatus.CREATED.value(), result.getResponse().getStatus());
         assertThat(result.getResponse().getContentAsString()).contains("Ben Simmons");
+    }
+
+    @Test
+    public void deletePlayerById() throws Exception {
+        MvcResult result = mvc.perform(delete("/api/players/{id}", 1)).andReturn();
+        assertEquals(HttpStatus.NO_CONTENT.value(), result.getResponse().getStatus());
     }
 }
